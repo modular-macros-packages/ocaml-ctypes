@@ -1,0 +1,8 @@
+; The staged companion layer (T22): ctypes itself is unmodified and
+; serves both levels -- (libraries ...) for types and the runtime API
+; in quotes, (static_libraries ...) for descriptions at level -1.
+(library
+ (name ctypes_staged)
+ (public_name ctypes.staged)
+ (libraries ctypes)
+ (static_libraries ctypes))
