@@ -1,4 +1,5 @@
-(lang dune 3.9)
+(lang dune 3.24)
+(using macocaml 0.1)
 (name ctypes)
 (version 0.24.0)
 (formatting (enabled_for dune))
