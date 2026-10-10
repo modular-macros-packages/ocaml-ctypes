@@ -62,7 +62,7 @@ struct
        let Ty t = Type_C.ccomp c in
        `LetAssign (lv, v, (c, t) >>= k)
 
-  let (>>) c1 c2 = (c1, Void) >>= fun _ -> c2
+  let (>>>) c1 c2 = (c1, Void) >>= fun _ -> c2
 
   let of_fatptr : cexp -> ceff =
     fun x -> `App (reader "CTYPES_ADDR_OF_FATPTR"
@@ -201,9 +201,9 @@ struct
            begin match errno_, concurrency with
                `Ignore_errno, `Sequential -> `Let ((local x t, e), (inj t (local x t) :> ccomp))
              | `Ignore_errno, `Unlocked ->
-                release_runtime_system >>
+                release_runtime_system >>>
                 `Let ((local x t, e), 
-                      acquire_runtime_system >>
+                      acquire_runtime_system >>>
                      (((inj t (local x t) :> ccomp), value) >>= fun x ->
 		      `CAMLreturnT (Ty value, x) :> ccomp))
              | `Return_errno, `Sequential -> 
@@ -215,9 +215,9 @@ struct
              | `Return_errno, `Unlocked -> 
                (`LetAssign (errno,
                            `Int Signed.SInt.zero,
-                           release_runtime_system >>
+                           release_runtime_system >>>
                            `Let ((local x t, e),
-                                 (acquire_runtime_system >>
+                                 (acquire_runtime_system >>>
                                  (inj t (local x t) :> ccomp), value) >>= fun v ->
                                  ((pair_with_errno v :> ccomp), value) >>= fun x ->
 				 `CAMLreturnT (Ty value, x))) : ccomp)
@@ -266,7 +266,7 @@ struct
       | Some e -> e
     in
     let wrap_if cond (lft:ccomp) (rgt:ccomp) =
-      if cond then lft >> rgt else rgt
+      if cond then lft >>> rgt else rgt
     in
     let call =
       (* f := functions[fn_name];
@@ -309,9 +309,9 @@ struct
       (dec,
        `LetConst (local "nargs" int, `Int (Signed.SInt.of_int (List.length args)),
                   wrap_if runtime_lock acquire_runtime_system (
-                  `CAMLparam0 >>
+                  `CAMLparam0 >>>
                   `CAMLlocalN (local "locals" (array (List.length args) value),
-                               local "nargs" int) >>
+                               local "nargs" int) >>>
                   body)),
        `Extern)
 
@@ -403,7 +403,7 @@ struct
     let rec body args : _ -> ccomp = function
         [] ->
         let r c = match result with
-          | Void -> Generate_C.(`App (fn', List.rev args) >> c)
+          | Void -> Generate_C.(`App (fn', List.rev args) >>> c)
           | result ->
             Generate_C.cast ~from:(Ty result) ~into:(Ty Void)
               (`LetAssign (`PointerField (`Local j, "result"),

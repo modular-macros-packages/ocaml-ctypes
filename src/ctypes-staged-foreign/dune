@@ -1,0 +1,10 @@
+; Staged foreign calls (T22 stage 3): the fn description drives a
+; generated wrapper -- writer chain unrolled, one call primitive --
+; while the callspec (process-local libffi state) is prepared at
+; runtime module initialization by the generated code itself, so
+; ctypes-foreign is a runtime dependency only.
+(library
+ (name ctypes_staged_foreign)
+ (public_name ctypes-foreign.staged)
+ (libraries ctypes ctypes.staged ctypes-foreign)
+ (static_libraries ctypes))
